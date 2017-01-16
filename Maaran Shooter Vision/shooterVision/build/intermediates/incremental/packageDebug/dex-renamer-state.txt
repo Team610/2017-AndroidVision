@@ -1,0 +1,7 @@
+#Sun Jan 15 21:08:01 EST 2017
+base.0=C\:\\Users\\Robotics\\AndroidStudioProjects\\Maaran Shooter Vision\\shooterVision\\build\\intermediates\\transforms\\dex\\debug\\folders\\1000\\10\\instant-run_6ff5f7ae38a153cf5d56311826f6be2cb80724b6
+renamed.1=classes.dex
+renamed.0=classes2.dex
+file.1=C\:\\Users\\Robotics\\AndroidStudioProjects\\Maaran Shooter Vision\\shooterVision\\build\\intermediates\\transforms\\dex\\debug\\folders\\1000\\10\\instant-run-bootstrap_778bdfc773e30c8ec8a1a9c52c03b21bf4035f68\\classes.dex
+base.1=C\:\\Users\\Robotics\\AndroidStudioProjects\\Maaran Shooter Vision\\shooterVision\\build\\intermediates\\transforms\\dex\\debug\\folders\\1000\\10\\instant-run-bootstrap_778bdfc773e30c8ec8a1a9c52c03b21bf4035f68
+file.0=C\:\\Users\\Robotics\\AndroidStudioProjects\\Maaran Shooter Vision\\shooterVision\\build\\intermediates\\transforms\\dex\\debug\\folders\\1000\\10\\instant-run_6ff5f7ae38a153cf5d56311826f6be2cb80724b6\\classes.dex

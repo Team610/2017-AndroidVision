@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<items version="2" >
+
+    <item
+        is-multidex="true"
+        jar="C:\Users\Robotics\AndroidStudioProjects\Maaran Shooter Vision\shooterVision\build\intermediates\incremental-classes\debug\instant-run-bootstrap.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="e1233992348a5e5bc9bb7a4bc2ef5cec71fbb2d9">
+        <dex dex="C:\Users\Robotics\AndroidStudioProjects\Maaran Shooter Vision\shooterVision\build\intermediates\transforms\dex\debug\folders\1000\10\instant-run-bootstrap_778bdfc773e30c8ec8a1a9c52c03b21bf4035f68\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\Robotics\AndroidStudioProjects\Maaran Shooter Vision\shooterVision\build\intermediates\incremental-runtime-classes\debug\instant-run.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="8dfd3689925e6e98177be67ece97c540f279eb2c">
+        <dex dex="C:\Users\Robotics\AndroidStudioProjects\Maaran Shooter Vision\shooterVision\build\intermediates\transforms\dex\debug\folders\1000\10\instant-run_6ff5f7ae38a153cf5d56311826f6be2cb80724b6\classes.dex" />
+    </item>
+
+</items>
