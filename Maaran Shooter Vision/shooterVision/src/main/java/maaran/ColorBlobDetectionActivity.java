@@ -62,6 +62,9 @@ public class ColorBlobDetectionActivity extends Activity implements CvCameraView
         setContentView(R.layout.color_blob_detection_surface_view);
 
         cvCameraView = (CameraBridgeViewBase) findViewById(R.id.color_blob_detection_activity_surface_view);
+        cvCameraView.setMaxFrameSize(800,600); //change this to any valid camera resolution
+        cvCameraView.setKeepScreenOn(true);
+        cvCameraView.enableFpsMeter();
         cvCameraView.setVisibility(SurfaceView.VISIBLE);
         cvCameraView.setCvCameraViewListener(this);
     }

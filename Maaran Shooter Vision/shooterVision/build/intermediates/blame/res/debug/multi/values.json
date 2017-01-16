@@ -1,6 +1,6 @@
 [
     {
-        "outputFile": "C:\\Users\\Robotics\\AndroidStudioProjects\\Maaran Shooter Vision\\shooterVision\\build\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values\\values.xml",
+        "outputFile": "C:\\Users\\Robotics\\Documents\\GitHub\\2017-AndroidVision\\Maaran Shooter Vision\\shooterVision\\build\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values\\values.xml",
         "map": [
             {
                 "to": {
@@ -11,7 +11,7 @@
                     "endOffset": 402
                 },
                 "from": {
-                    "file": "C:\\Users\\Robotics\\AndroidStudioProjects\\Maaran Shooter Vision\\shooterVision\\src\\main\\res\\values\\strings.xml",
+                    "file": "C:\\Users\\Robotics\\Documents\\GitHub\\2017-AndroidVision\\Maaran Shooter Vision\\shooterVision\\src\\main\\res\\values\\strings.xml",
                     "position": {
                         "startLine": 2,
                         "startColumn": 4,
