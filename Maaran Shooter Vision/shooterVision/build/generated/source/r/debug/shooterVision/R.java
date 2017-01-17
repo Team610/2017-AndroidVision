@@ -1513,7 +1513,7 @@ containing a value of this type.
         public static final int beginning=0x7f0b0016;
         public static final int checkbox=0x7f0b002c;
         public static final int collapseActionView=0x7f0b001a;
-        public static final int color_blob_detection_activity_surface_view=0x7f0b0047;
+        public static final int color_blob_detection_activity_surface_view=0x7f0b0048;
         public static final int decor_content_parent=0x7f0b0032;
         public static final int default_activity_button=0x7f0b0027;
         public static final int dialog=0x7f0b001e;
@@ -1536,7 +1536,8 @@ containing a value of this type.
         public static final int never=0x7f0b001c;
         public static final int none=0x7f0b000e;
         public static final int normal=0x7f0b000a;
-        public static final int options=0x7f0b0046;
+        public static final int options=0x7f0b0047;
+        public static final int presets=0x7f0b0046;
         public static final int progress_circular=0x7f0b0005;
         public static final int progress_horizontal=0x7f0b0006;
         public static final int radio=0x7f0b002e;

@@ -377,7 +377,7 @@ int id back 0x7f0b0014
 int id beginning 0x7f0b0016
 int id checkbox 0x7f0b002c
 int id collapseActionView 0x7f0b001a
-int id color_blob_detection_activity_surface_view 0x7f0b0047
+int id color_blob_detection_activity_surface_view 0x7f0b0048
 int id decor_content_parent 0x7f0b0032
 int id default_activity_button 0x7f0b0027
 int id dialog 0x7f0b001e
@@ -400,7 +400,8 @@ int id middle 0x7f0b0018
 int id never 0x7f0b001c
 int id none 0x7f0b000e
 int id normal 0x7f0b000a
-int id options 0x7f0b0046
+int id options 0x7f0b0047
+int id presets 0x7f0b0046
 int id progress_circular 0x7f0b0005
 int id progress_horizontal 0x7f0b0006
 int id radio 0x7f0b002e
