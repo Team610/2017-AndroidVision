@@ -1,33 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <instant-run
-    abi="arm64-v8a,armeabi-v7a,armeabi"
+    abi="armeabi-v7a,armeabi"
     api-level="25"
-    density="560dpi"
+    density="xxhdpi"
     format="8"
     plugin-version="2.2.3"
-    timestamp="12644012587841"
+    timestamp="101021264815495"
     token="-1666334167548521040"
     verifier="FULL_BUILD_REQUESTED" >
 
     <task
         name="javac"
-        duration="53" />
+        duration="179" />
     <task
         name="instant-run-dex"
         duration="0" />
     <task
         name="instant-run-transform"
-        duration="360" />
+        duration="413" />
     <task
         name="verifier"
-        duration="147" />
+        duration="396" />
 
     <artifact
         location="C:\Users\Robotics\Documents\GitHub\2017-AndroidVision\Maaran Shooter Vision\shooterVision\build\outputs\apk\shooterVision-debug.apk"
         type="MAIN" />
 
     <build
-        timestamp="12644012587841"
+        timestamp="101021264815495"
         verifier="FULL_BUILD_REQUESTED" >
         <artifact
             location="C:\Users\Robotics\Documents\GitHub\2017-AndroidVision\Maaran Shooter Vision\shooterVision\build\outputs\apk\shooterVision-debug.apk"

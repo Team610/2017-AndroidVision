@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         applicationId "com.maaran.shooterVision"
-        minSdkVersion 8
+        minSdkVersion 15 //8
         targetSdkVersion 25
     }
 
@@ -20,4 +20,5 @@ android {
 
 dependencies {
     compile project(':openCVLibrary310')
+    compile 'org.florescu.android.rangeseekbar:rangeseekbar-library:0.3.0'
 }

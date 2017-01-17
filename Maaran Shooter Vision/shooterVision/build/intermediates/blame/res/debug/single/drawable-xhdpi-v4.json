@@ -1,0 +1,14 @@
+[
+    {
+        "merged": "C:\\Users\\Robotics\\Documents\\GitHub\\2017-AndroidVision\\Maaran Shooter Vision\\shooterVision\\build\\intermediates\\res\\merged\\debug\\drawable-xhdpi-v4\\seek_thumb_pressed.png",
+        "source": "C:\\Users\\Robotics\\Documents\\GitHub\\2017-AndroidVision\\Maaran Shooter Vision\\shooterVision\\build\\intermediates\\exploded-aar\\org.florescu.android.rangeseekbar\\rangeseekbar-library\\0.3.0\\res\\drawable-xhdpi-v4\\seek_thumb_pressed.png"
+    },
+    {
+        "merged": "C:\\Users\\Robotics\\Documents\\GitHub\\2017-AndroidVision\\Maaran Shooter Vision\\shooterVision\\build\\intermediates\\res\\merged\\debug\\drawable-xhdpi-v4\\seek_thumb_normal.png",
+        "source": "C:\\Users\\Robotics\\Documents\\GitHub\\2017-AndroidVision\\Maaran Shooter Vision\\shooterVision\\build\\intermediates\\exploded-aar\\org.florescu.android.rangeseekbar\\rangeseekbar-library\\0.3.0\\res\\drawable-xhdpi-v4\\seek_thumb_normal.png"
+    },
+    {
+        "merged": "C:\\Users\\Robotics\\Documents\\GitHub\\2017-AndroidVision\\Maaran Shooter Vision\\shooterVision\\build\\intermediates\\res\\merged\\debug\\drawable-xhdpi-v4\\seek_thumb_disabled.png",
+        "source": "C:\\Users\\Robotics\\Documents\\GitHub\\2017-AndroidVision\\Maaran Shooter Vision\\shooterVision\\build\\intermediates\\exploded-aar\\org.florescu.android.rangeseekbar\\rangeseekbar-library\\0.3.0\\res\\drawable-xhdpi-v4\\seek_thumb_disabled.png"
+    }
+]

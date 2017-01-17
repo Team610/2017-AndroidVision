@@ -65,29 +65,29 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
     }
 
     protected boolean initializeCamera(int width, int height) {
-        Log.d(TAG, "Initialize java camera");
+        //Log.d(TAG, "Initialize java camera");
         boolean result = true;
         synchronized (this) {
             mCamera = null;
 
             if (mCameraIndex == CAMERA_ID_ANY) {
-                Log.d(TAG, "Trying to open camera with old open()");
+                //Log.d(TAG, "Trying to open camera with old open()");
                 try {
                     mCamera = Camera.open();
                 }
                 catch (Exception e){
-                    Log.e(TAG, "Camera is not available (in use or does not exist): " + e.getLocalizedMessage());
+                    //Log.e(TAG, "Camera is not available (in use or does not exist): " + e.getLocalizedMessage());
                 }
 
                 if(mCamera == null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
                     boolean connected = false;
                     for (int camIdx = 0; camIdx < Camera.getNumberOfCameras(); ++camIdx) {
-                        Log.d(TAG, "Trying to open camera with new open(" + Integer.valueOf(camIdx) + ")");
+                        //Log.d(TAG, "Trying to open camera with new open(" + Integer.valueOf(camIdx) + ")");
                         try {
                             mCamera = Camera.open(camIdx);
                             connected = true;
                         } catch (RuntimeException e) {
-                            Log.e(TAG, "Camera #" + camIdx + "failed to open: " + e.getLocalizedMessage());
+                            //Log.e(TAG, "Camera #" + camIdx + "failed to open: " + e.getLocalizedMessage());
                         }
                         if (connected) break;
                     }
@@ -96,7 +96,7 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
                     int localCameraIndex = mCameraIndex;
                     if (mCameraIndex == CAMERA_ID_BACK) {
-                        Log.i(TAG, "Trying to open back camera");
+                        //Log.i(TAG, "Trying to open back camera");
                         Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
                         for (int camIdx = 0; camIdx < Camera.getNumberOfCameras(); ++camIdx) {
                             Camera.getCameraInfo( camIdx, cameraInfo );
@@ -106,7 +106,7 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
                             }
                         }
                     } else if (mCameraIndex == CAMERA_ID_FRONT) {
-                        Log.i(TAG, "Trying to open front camera");
+                        //Log.i(TAG, "Trying to open front camera");
                         Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
                         for (int camIdx = 0; camIdx < Camera.getNumberOfCameras(); ++camIdx) {
                             Camera.getCameraInfo( camIdx, cameraInfo );
@@ -117,15 +117,15 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
                         }
                     }
                     if (localCameraIndex == CAMERA_ID_BACK) {
-                        Log.e(TAG, "Back camera not found!");
+                        //Log.e(TAG, "Back camera not found!");
                     } else if (localCameraIndex == CAMERA_ID_FRONT) {
-                        Log.e(TAG, "Front camera not found!");
+                        //Log.e(TAG, "Front camera not found!");
                     } else {
-                        Log.d(TAG, "Trying to open camera with new open(" + Integer.valueOf(localCameraIndex) + ")");
+                        //Log.d(TAG, "Trying to open camera with new open(" + Integer.valueOf(localCameraIndex) + ")");
                         try {
                             mCamera = Camera.open(localCameraIndex);
                         } catch (RuntimeException e) {
-                            Log.e(TAG, "Camera #" + localCameraIndex + "failed to open: " + e.getLocalizedMessage());
+                            //Log.e(TAG, "Camera #" + localCameraIndex + "failed to open: " + e.getLocalizedMessage());
                         }
                     }
                 }
@@ -137,7 +137,7 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
             /* Now set camera parameters */
             try {
                 Camera.Parameters params = mCamera.getParameters();
-                Log.d(TAG, "getSupportedPreviewSizes()");
+                //Log.d(TAG, "getSupportedPreviewSizes()");
                 List<android.hardware.Camera.Size> sizes = params.getSupportedPreviewSizes();
 
                 if (sizes != null) {
@@ -145,7 +145,7 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
                     Size frameSize = calculateCameraFrameSize(sizes, new JavaCameraSizeAccessor(), width, height);
 
                     params.setPreviewFormat(ImageFormat.NV21);
-                    Log.d(TAG, "Set preview size to " + Integer.valueOf((int)frameSize.width) + "x" + Integer.valueOf((int)frameSize.height));
+                    //Log.d(TAG, "Set preview size to " + Integer.valueOf((int)frameSize.width) + "x" + Integer.valueOf((int)frameSize.height));
                     params.setPreviewSize((int)frameSize.width, (int)frameSize.height);
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH && !android.os.Build.MODEL.equals("GT-I9100"))
@@ -155,8 +155,11 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
                     if (FocusModes != null && FocusModes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO))
                     {
                         params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
+                        //params.setFocusMode(Camera.Parameters.FOCUS_MODE_INFINITY);
                     }
-
+                    params.setExposureCompensation(10);
+                    params.setAutoExposureLock(true);
+                    params.setWhiteBalance(Camera.Parameters.WHITE_BALANCE_DAYLIGHT);
                     mCamera.setParameters(params);
                     params = mCamera.getParameters();
 
@@ -196,7 +199,7 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
                        mCamera.setPreviewDisplay(null);
 
                     /* Finally we are ready to start the preview */
-                    Log.d(TAG, "startPreview");
+                    //Log.d(TAG, "startPreview");
                     mCamera.startPreview();
                 }
                 else
@@ -239,7 +242,7 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
          * 2. We need to start thread which will be getting frames
          */
         /* First step - initialize camera connection */
-        Log.d(TAG, "Connecting to camera");
+        //Log.d(TAG, "Connecting to camera");
         if (!initializeCamera(width, height))
             return false;
 
@@ -259,7 +262,7 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
         /* 1. We need to stop thread which updating the frames
          * 2. Stop camera and release it
          */
-        Log.d(TAG, "Disconnecting from camera");
+        //Log.d(TAG, "Disconnecting from camera");
         try {
             mStopThread = true;
             Log.d(TAG, "Notify thread");
@@ -283,7 +286,7 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
 
     @Override
     public void onPreviewFrame(byte[] frame, Camera arg1) {
-        Log.d(TAG, "Preview Frame received. Frame size: " + frame.length);
+        //Log.d(TAG, "Preview Frame received. Frame size: " + frame.length);
         synchronized (this) {
             mFrameChain[mChainIdx].put(0, 0, frame);
             mCameraFrameReady = true;
@@ -350,7 +353,7 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
                         deliverAndDrawFrame(mCameraFrame[1 - mChainIdx]);
                 }
             } while (!mStopThread);
-            Log.d(TAG, "Finish processing thread");
+            //Log.d(TAG, "Finish processing thread");
         }
     }
 }

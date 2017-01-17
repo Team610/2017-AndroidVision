@@ -1,11 +1,47 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent"
+    xmlns:rsb="http://schemas.android.com/apk/res-auto">
+
+    <LinearLayout
+        android:id="@+id/sliders"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+        <org.florescu.android.rangeseekbar.RangeSeekBar
+            android:id="@+id/hSlider"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            rsb:absoluteMaxValue="180"
+            rsb:absoluteMinValue="0" />
+
+        <org.florescu.android.rangeseekbar.RangeSeekBar
+            android:id="@+id/sSlider"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            rsb:absoluteMaxValue="255"
+            rsb:absoluteMinValue="0" />
+
+        <org.florescu.android.rangeseekbar.RangeSeekBar
+            android:id="@+id/vSlider"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            rsb:absoluteMaxValue="255"
+            rsb:absoluteMinValue="0" />
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/options"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Options"
+        android:onClick="selfDestruct" />
+
 
     <org.opencv.android.JavaCameraView
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:id="@+id/color_blob_detection_activity_surface_view" />
 
-</LinearLayout>
+</RelativeLayout>

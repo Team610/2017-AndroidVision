@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="RangeSeekBar"><attr format="integer|float" name="absoluteMinValue"/><attr format="integer|float" name="absoluteMaxValue"/><attr format="boolean" name="singleThumb"/><attr format="boolean" name="showLabels"/><attr format="boolean" name="alwaysActive"/><attr format="boolean" name="valuesAboveThumbs"/><attr format="dimension" name="internalPadding"/><attr format="dimension" name="barHeight"/><attr format="color" name="defaultColor"/><attr format="color" name="activeColor"/><attr format="color" name="textAboveThumbsColor"/><attr format="reference" name="thumbNormal"/><attr format="reference" name="thumbPressed"/><attr format="reference" name="thumbDisabled"/><attr format="boolean" name="thumbShadow"/><attr format="color" name="thumbShadowColor"/><attr format="dimension" name="thumbShadowXOffset"/><attr format="dimension" name="thumbShadowYOffset"/><attr format="dimension" name="thumbShadowBlur"/><attr format="boolean" name="activateOnDefaultValues"/></declare-styleable>
+    <!-- From: file:/home/travis/build/anothem/android-range-seek-bar/rangeseekbar/src/main/res/values/strings.xml -->
+    <eat-comment/>
+    <string name="app_name">RangeSeekBar Demo</string>
+    <string name="demo_max_label">Max</string>
+    <string name="demo_min_label">Min</string>
+</resources>
