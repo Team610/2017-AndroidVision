@@ -1,5 +1,7 @@
 package maaran;
 
+import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,29 +26,29 @@ public class ColorBlobDetector {
     Mat mHsvMat = new Mat();
     Mat mMask = new Mat();
     Mat mHierarchy = new Mat();
+    List<MatOfPoint> contours = new ArrayList<MatOfPoint>(); //list for storing all contours
+    double maximumArea;
 
+    public void setupHSV(){
+        lowerLimit.val[0] = 0;
+        lowerLimit.val[1] = 0;
+        lowerLimit.val[2] = 0;
+
+        upperLimit.val[0] = 0;
+        upperLimit.val[1] = 0;
+        upperLimit.val[2] = 0;
+    }
 
     public void process(Mat rgbaImage) {
-        //these will be removed once sliders are added
-        upperLimit.val[0] = 100;
-        upperLimit.val[1] = 100;
-        upperLimit.val[2] = 100;
-        upperLimit.val[3] = 0;
-
-        lowerLimit.val[0] = 130;
-        lowerLimit.val[1] = 255;
-        lowerLimit.val[2] = 255;
-        lowerLimit.val[3] = 255;
-
 
         Imgproc.cvtColor(rgbaImage, mHsvMat, Imgproc.COLOR_RGB2HSV); //converts image to hsv
 
-        Core.inRange(mHsvMat, upperLimit, lowerLimit, mMask); //masks image
+        Core.inRange(mHsvMat, lowerLimit, upperLimit, mMask); //masks image
 
-        List<MatOfPoint> contours = new ArrayList<MatOfPoint>(); //list for storing all contours
+        contours.clear(); //clears list
 
         Imgproc.findContours(mMask, contours, mHierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE); //finds all contours
-        double maximumArea = 0; //used to track biggest contour
+        maximumArea = 0; //used to track biggest contour
         //iterates through all contours and finds the biggest contour
         for (int i = 0; i < contours.size(); i++) {
             double a = Imgproc.contourArea(contours.get(i));
@@ -56,18 +58,30 @@ public class ColorBlobDetector {
                 rect = Imgproc.boundingRect(bestContour); //rectangle around bestContour
             }
         }
-        if(maximumArea > 1000) //checks if it's worth tracking this contour
+        if(rect.area() > 1) //checks if it's worth tracking this contour
             isBestContour = true;
         else
             isBestContour = false;
+    }
+
+    public Mat maskedFrame(Mat rgbaImage){
+        Imgproc.cvtColor(rgbaImage, mHsvMat, Imgproc.COLOR_RGB2HSV);
+        Mat result = new Mat();
+        Core.inRange(mHsvMat, lowerLimit,upperLimit, mMask);
+        Core.bitwise_and(mMask,mMask,result);
+        return result;
     }
     //Will be used to implement sliders later on
     public void setHSV(Scalar lowerT, Scalar upperT){
         for(int i = 0; i<3; i++){
             upperLimit.val[i] = upperT.val[i];
-            lowerLimit.val[i] = upperT.val[i];
+            lowerLimit.val[i] = lowerT.val[i];
         }
+
+        Log.d("Loaded","HSV Updated");
     }
+
+    public boolean isCreated(){return true;}
     public MatOfPoint getContours() {
         return bestContour;
     }
