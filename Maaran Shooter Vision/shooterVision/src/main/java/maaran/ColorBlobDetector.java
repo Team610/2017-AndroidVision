@@ -23,6 +23,8 @@ public class ColorBlobDetector {
 
     private boolean isBestContour = false;
 
+    private int minimumArea = 0;
+
     Mat mHsvMat = new Mat();
     Mat mMask = new Mat();
     Mat mHierarchy = new Mat();
@@ -58,7 +60,7 @@ public class ColorBlobDetector {
                 rect = Imgproc.boundingRect(bestContour); //rectangle around bestContour
             }
         }
-        if(rect.area() > 1) //checks if it's worth tracking this contour
+        if(rect.area() > 100) //checks if it's worth tracking this contour
             isBestContour = true;
         else
             isBestContour = false;
@@ -92,4 +94,6 @@ public class ColorBlobDetector {
     public boolean bestContour() {
         return isBestContour;
     }
+
+    public void setMinSize(int area){   minimumArea=area;  }
 }

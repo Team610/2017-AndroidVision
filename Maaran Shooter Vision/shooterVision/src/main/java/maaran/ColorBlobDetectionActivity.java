@@ -17,6 +17,8 @@ import shooterVision.R;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.hardware.usb.UsbDeviceConnection;
+import android.hardware.usb.UsbManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -25,10 +27,26 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.view.SurfaceView;
 
+
 import org.florescu.android.rangeseekbar.RangeSeekBar;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.Socket;
+import java.util.List;
+
 
 public class ColorBlobDetectionActivity extends Activity implements CvCameraViewListener2, RangeSeekBar.OnRangeSeekBarChangeListener{
     private static final String  TAG = "OCV::Activity"; //Filter by this tag to see specific printouts
+
+    private static final int port = 3800;
+    public final String host = "localhost";
+    private final String TAGOne = "Communication";
+
+    private String message;
+
+    private Socket socket;
+
 
     private Mat rgbaColors; //frame
     private Mat smallerFrame;
@@ -52,9 +70,12 @@ public class ColorBlobDetectionActivity extends Activity implements CvCameraView
 
     private View option;
 
-    boolean sliderShow = false;
+    private boolean sliderShow = false;
 
     private CameraBridgeViewBase cvCameraView;
+
+    private double xCentroid = 0;
+
     private BaseLoaderCallback  mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
         public void onManagerConnected(int status) {
@@ -76,7 +97,6 @@ public class ColorBlobDetectionActivity extends Activity implements CvCameraView
         Log.i(TAG, "Instantiated new " + this.getClass());
     }
 
-    /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         //Log.i(TAG, "called onCreate");
@@ -98,7 +118,7 @@ public class ColorBlobDetectionActivity extends Activity implements CvCameraView
         vSlider.setOnRangeSeekBarChangeListener(this);
 
         cvCameraView = (CameraBridgeViewBase) findViewById(R.id.color_blob_detection_activity_surface_view);
-        cvCameraView.setMaxFrameSize(640,320); //change this to any valid camera resolution
+        cvCameraView.setMaxFrameSize(480,320); //change this to any valid camera resolution
         cvCameraView.setKeepScreenOn(true);
         cvCameraView.enableFpsMeter();
         cvCameraView.setVisibility(SurfaceView.VISIBLE);
@@ -109,6 +129,8 @@ public class ColorBlobDetectionActivity extends Activity implements CvCameraView
         rect = new Rect();
         topL = new Point();
         botR = new Point();
+
+
     }
 
     @Override
@@ -151,6 +173,16 @@ public class ColorBlobDetectionActivity extends Activity implements CvCameraView
     }
 
     public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
+        message = null;
+        if(socket == null){
+            try{
+                Log.d(TAGOne,"Trying to connect");
+                socket= new Socket(host,port);
+                socket.setSoTimeout(100);
+            }catch (IOException e){
+                socket = null;
+            }
+        }
         rgbaColors = inputFrame.rgba(); //takes rgba frame (a is just for opacity)
         colorDetector.process(rgbaColors);
         if(!sliderShow) {
@@ -158,14 +190,24 @@ public class ColorBlobDetectionActivity extends Activity implements CvCameraView
                 rect = colorDetector.getRect();
                 topL = new Point(rect.x, rect.y);
                 botR = new Point(rect.x + rect.width, rect.y + rect.height);
-                //double xCentroid = rect.x + (rect.width/2);
-                //Log.e("xCentroid"," " + xCentroid);
+                xCentroid = rect.x + (rect.width/2);
+                message = xCentroid + "/n";
+                Log.d("xCentroid"," " + xCentroid);
                 Imgproc.rectangle(rgbaColors, topL, botR, contourColor, 10); //draws rectangle over the current frame before returning it
 
             }
         }
         else{
             rgbaColors = colorDetector.maskedFrame(rgbaColors);
+        }
+        if(message!=null && socket != null && socket.isConnected()){
+            try{
+                Log.d(TAGOne,"Trying to write data");
+                OutputStream os = socket.getOutputStream();
+                os.write(message.getBytes());
+            } catch (IOException e){
+                socket = null;
+            }
         }
         return rgbaColors;
     }
@@ -322,5 +364,6 @@ public class ColorBlobDetectionActivity extends Activity implements CvCameraView
     public void load(View view){
         loadData();
     }
+
 
 }
