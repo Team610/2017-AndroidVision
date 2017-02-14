@@ -17,8 +17,10 @@ import shooterVision.R;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.hardware.usb.UsbDeviceConnection;
-import android.hardware.usb.UsbManager;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -33,23 +35,37 @@ import org.florescu.android.rangeseekbar.RangeSeekBar;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.util.List;
 
 
-public class ColorBlobDetectionActivity extends Activity implements CvCameraViewListener2, RangeSeekBar.OnRangeSeekBarChangeListener{
+public class ColorBlobDetectionActivity extends Activity implements CvCameraViewListener2, RangeSeekBar.OnRangeSeekBarChangeListener, SensorEventListener{
     private static final String  TAG = "OCV::Activity"; //Filter by this tag to see specific printouts
 
-    private static final int port = 3800;
+    private SensorManager senSensorManager;
+    private Sensor senAccelerometer;
+
+    private long lastUpdate = 0;
+    private float last_x, last_y, last_z;
+
+    private float[] gravity;
+    private float[] acceleration;
+
+    private float offset;
+
+    private boolean predictiveEnabled;
+    private static final int port = 5800;
     public final String host = "localhost";
     private final String TAGOne = "Communication";
+    String xCenter;
+
+    private double width;
 
     private String message;
 
     private Socket socket;
 
+    private PredictiveTargeting prediction;
 
     private Mat rgbaColors; //frame
-    private Mat smallerFrame;
     private ColorBlobDetector colorDetector;
     private Scalar contourColor;
     private ViewGroup sliderView;
@@ -69,12 +85,19 @@ public class ColorBlobDetectionActivity extends Activity implements CvCameraView
     private Scalar lowerLimit = new Scalar(0);
 
     private View option;
+    private View gameView;
+    Client myClient;
+
+    private Rect roi = new Rect(0,0,500,480);
 
     private boolean sliderShow = false;
+    private boolean gameMode = false;
 
     private CameraBridgeViewBase cvCameraView;
 
     private double xCentroid = 0;
+
+    static boolean clientRun = true;
 
     private BaseLoaderCallback  mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -110,6 +133,9 @@ public class ColorBlobDetectionActivity extends Activity implements CvCameraView
         option = (View) findViewById(R.id.options);
         presetView = (ViewGroup) findViewById(R.id.presets);
 
+        senSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        senAccelerometer = senSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+
         hSlider = (RangeSeekBar) findViewById(R.id.hSlider);
         hSlider.setOnRangeSeekBarChangeListener(this);
         sSlider = (RangeSeekBar) findViewById(R.id.sSlider);
@@ -118,25 +144,32 @@ public class ColorBlobDetectionActivity extends Activity implements CvCameraView
         vSlider.setOnRangeSeekBarChangeListener(this);
 
         cvCameraView = (CameraBridgeViewBase) findViewById(R.id.color_blob_detection_activity_surface_view);
-        cvCameraView.setMaxFrameSize(480,320); //change this to any valid camera resolution
+        cvCameraView.setMaxFrameSize(640,480); //change this to any valid camera resolution
         cvCameraView.setKeepScreenOn(true);
         cvCameraView.enableFpsMeter();
         cvCameraView.setVisibility(SurfaceView.VISIBLE);
         cvCameraView.setCvCameraViewListener(this);
-
         option.bringToFront();
 
+        predictiveEnabled = false;
+        gravity = new float[3];
+        acceleration = new float[3];
         rect = new Rect();
         topL = new Point();
         botR = new Point();
+        socket = null;
+        myClient = new Client();
+        myClient.execute(socket);
 
-
+        prediction = new PredictiveTargeting();
+        offset = 0;
     }
 
     @Override
     public void onPause() {
         super.onDestroy();
         super.onPause();
+        senSensorManager.unregisterListener((SensorEventListener) this);
         if (cvCameraView != null)
             cvCameraView.disableView();
     }
@@ -144,6 +177,7 @@ public class ColorBlobDetectionActivity extends Activity implements CvCameraView
     @Override
     public void onResume() {
         super.onResume();
+        senSensorManager.registerListener((SensorEventListener)this,senAccelerometer,SensorManager.SENSOR_DELAY_NORMAL);
         if (!OpenCVLoader.initDebug()) {
             OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_0_0, this, mLoaderCallback);
         } else {
@@ -159,7 +193,6 @@ public class ColorBlobDetectionActivity extends Activity implements CvCameraView
 
     public void onCameraViewStarted(int width, int height) {
         rgbaColors = new Mat(height, width, CvType.CV_8UC4);
-        smallerFrame = new Mat(height/2, width/2, CvType.CV_8UC4);
         contourColor = new Scalar(255,0,0,255);
         colorDetector = new ColorBlobDetector();
         colorDetector.setupHSV();
@@ -174,40 +207,31 @@ public class ColorBlobDetectionActivity extends Activity implements CvCameraView
 
     public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
         message = null;
-        if(socket == null){
-            try{
-                Log.d(TAGOne,"Trying to connect");
-                socket= new Socket(host,port);
-                socket.setSoTimeout(100);
-            }catch (IOException e){
-                socket = null;
-            }
-        }
         rgbaColors = inputFrame.rgba(); //takes rgba frame (a is just for opacity)
-        colorDetector.process(rgbaColors);
+        Mat areaToTrack = new Mat(rgbaColors,roi);
+        width = rgbaColors.height();
+        colorDetector.process(areaToTrack);
         if(!sliderShow) {
             if (colorDetector.bestContour()) { //if there is a contour worth tracking
                 rect = colorDetector.getRect();
                 topL = new Point(rect.x, rect.y);
                 botR = new Point(rect.x + rect.width, rect.y + rect.height);
-                xCentroid = rect.x + (rect.width/2);
-                message = xCentroid + "/n";
-                Log.d("xCentroid"," " + xCentroid);
-                Imgproc.rectangle(rgbaColors, topL, botR, contourColor, 10); //draws rectangle over the current frame before returning it
-
+                xCentroid = rect.y + (rect.height/2);
+                xCentroid -= width/2;
+                if (predictiveEnabled)
+                    xCentroid += offset;
+                xCenter = xCentroid + "/n";
+                Log.d("xCentroid", xCenter);
+                messageToSend.message = xCenter;
+                Imgproc.rectangle(rgbaColors, topL, botR, contourColor, 3); //draws rectangle over the current frame before returning it
             }
+            else if(colorDetector.isBall)
+                messageToSend.message = "b/n";
+            else
+                messageToSend.message = "No target/n";
         }
         else{
             rgbaColors = colorDetector.maskedFrame(rgbaColors);
-        }
-        if(message!=null && socket != null && socket.isConnected()){
-            try{
-                Log.d(TAGOne,"Trying to write data");
-                OutputStream os = socket.getOutputStream();
-                os.write(message.getBytes());
-            } catch (IOException e){
-                socket = null;
-            }
         }
         return rgbaColors;
     }
@@ -280,18 +304,43 @@ public class ColorBlobDetectionActivity extends Activity implements CvCameraView
         colorDetector.setHSV(lowerLimit,upperLimit);
     }
 
+    public void enablePredictive(View view){
+        if(predictiveEnabled)
+            predictiveEnabled = false;
+        else
+            predictiveEnabled = true;
+    }
+
+    public void retroPreset(View view){
+        lowerLimit.val[0] = 22;
+        lowerLimit.val[1] = 203;
+        lowerLimit.val[2] = 162;
+        upperLimit.val[0] = 96;
+        upperLimit.val[1] = 255;
+        upperLimit.val[2] = 255;
+
+        hSlider.setSelectedMinValue(lowerLimit.val[0]);
+        sSlider.setSelectedMinValue(lowerLimit.val[1]);
+        vSlider.setSelectedMinValue(lowerLimit.val[2]);
+        hSlider.setSelectedMaxValue(upperLimit.val[0]);
+        sSlider.setSelectedMaxValue(upperLimit.val[1]);
+        vSlider.setSelectedMaxValue(upperLimit.val[2]);
+
+        colorDetector.setHSV(lowerLimit,upperLimit);
+    }
+
     @Override
     public void onRangeSeekBarValuesChanged(RangeSeekBar bar, Object minValue, Object maxValue) {
-        //Log.d("Bar"," "+ bar.getId());
-        if((int)bar.getId() == 2131427395) { //hbar id
+        //Log.d("Barber"," "+ bar.getId());
+        if(bar.getId() == hSlider.getId()) { //hbar id
             upperLimit.val[0] = bar.getSelectedMaxValue().doubleValue();
             lowerLimit.val[0] = bar.getSelectedMinValue().doubleValue();
         }
-        if((int)bar.getId() == 2131427396) { //sbar id
+        if(bar.getId() == sSlider.getId()) { //sbar id
             upperLimit.val[1] = bar.getSelectedMaxValue().doubleValue();
             lowerLimit.val[1] = bar.getSelectedMinValue().doubleValue();
         }
-        if((int)bar.getId() == 2131427397) { //vbar id
+        if(bar.getId() == vSlider.getId()) { //vbar id
             upperLimit.val[2] = bar.getSelectedMaxValue().doubleValue();
             lowerLimit.val[2] = bar.getSelectedMinValue().doubleValue();
         }
@@ -365,5 +414,47 @@ public class ColorBlobDetectionActivity extends Activity implements CvCameraView
         loadData();
     }
 
+    public static void runClient(Socket clientSocket){
+        if(clientRun){
+            Client myClient = new Client();
+            myClient.execute(clientSocket);
+        }
+    }
 
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        if(predictiveEnabled){
+            final float alpha = 0.8f;
+            Sensor mySensor = event.sensor;
+            if(mySensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+                float x = event.values[0];
+                float y = event.values[1];
+                float z = event.values[2];
+
+                gravity[0] = alpha * gravity[0] + (1-alpha) * event.values[0];
+                gravity[1] = alpha * gravity[1] + (1-alpha) * event.values[1];
+                gravity[2] = alpha * gravity[2] + (1-alpha) * event.values[2];
+
+                acceleration[0] = event.values[0] - gravity[0];
+                acceleration[1] = event.values[1] - gravity[1];
+                acceleration[2] = event.values[2] - gravity[2];
+
+                long curTime = System.currentTimeMillis();
+                if ((curTime - lastUpdate) > 100) {
+                    long diffTime = (curTime - lastUpdate);
+                    lastUpdate = curTime;
+                    last_x = acceleration[0];
+                    offset = prediction.calcPredicted(last_x);
+                    last_y = acceleration[1];
+                    last_z = acceleration[2];
+                }
+                Log.d("Accelerometer:", "x: " + last_x + " y: " + last_y + " z: " + last_z);
+            }
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+    }
 }

@@ -7,6 +7,9 @@ import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.hardware.Camera.PreviewCallback;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -41,7 +44,7 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
     protected JavaCameraFrame[] mCameraFrame;
     private SurfaceTexture mSurfaceTexture;
 
-    public static class JavaCameraSizeAccessor implements ListItemAccessor {
+    public static class JavaCameraSizeAccessor implements ListItemAccessor, SensorEventListener {
 
         @Override
         public int getWidth(Object obj) {
@@ -53,6 +56,16 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
         public int getHeight(Object obj) {
             Camera.Size size = (Camera.Size) obj;
             return size.height;
+        }
+
+        @Override
+        public void onSensorChanged(SensorEvent event) {
+
+        }
+
+        @Override
+        public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
         }
     }
 
@@ -154,10 +167,13 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
                     List<String> FocusModes = params.getSupportedFocusModes();
                     if (FocusModes != null && FocusModes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO))
                     {
-                        params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
-                        //params.setFocusMode(Camera.Parameters.FOCUS_MODE_INFINITY);
+                        //params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
+                        params.setFocusMode(Camera.Parameters.FOCUS_MODE_INFINITY);
                     }
-                    params.setExposureCompensation(10);
+                    String zoom = "" + params.getMaxZoom();
+                    Log.d("Zoom",zoom);
+                    params.setZoom(20);
+                    params.setExposureCompensation(0); //-12\
                     params.setAutoExposureLock(true);
                     params.setWhiteBalance(Camera.Parameters.WHITE_BALANCE_DAYLIGHT);
                     mCamera.setParameters(params);
@@ -176,7 +192,7 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
                     }
 
                     int size = mFrameWidth * mFrameHeight;
-                    size  = size * ImageFormat.getBitsPerPixel(params.getPreviewFormat()) / 8;
+                    size  = size * ImageFormat.getBitsPerPixel(params.getPreviewFormat()) / 8; 
                     mBuffer = new byte[size];
 
                     mCamera.addCallbackBuffer(mBuffer);

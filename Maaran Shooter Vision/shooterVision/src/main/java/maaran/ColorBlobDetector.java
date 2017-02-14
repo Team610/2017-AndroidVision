@@ -2,6 +2,7 @@ package maaran;
 
 import android.util.Log;
 
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,18 +13,19 @@ import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
+
 public class ColorBlobDetector {
     // Lower and Upper bounds for range checking in HSV color space
     private Scalar upperLimit = new Scalar(0);
     private Scalar lowerLimit = new Scalar(0);
+    public static boolean isBall = false;
 
     private MatOfPoint bestContour = new MatOfPoint(); //stores best contour
 
     private Rect rect = new Rect(0,0,0,0); //the bounding rect made when you have a best contour
+    private Rect curCont = new Rect(0,0,0,0);
 
     private boolean isBestContour = false;
-
-    private int minimumArea = 0;
 
     Mat mHsvMat = new Mat();
     Mat mMask = new Mat();
@@ -42,6 +44,7 @@ public class ColorBlobDetector {
     }
 
     public void process(Mat rgbaImage) {
+        Log.d("SizeofTracking","width:" + rgbaImage.height());
 
         Imgproc.cvtColor(rgbaImage, mHsvMat, Imgproc.COLOR_RGB2HSV); //converts image to hsv
 
@@ -52,15 +55,20 @@ public class ColorBlobDetector {
         Imgproc.findContours(mMask, contours, mHierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE); //finds all contours
         maximumArea = 0; //used to track biggest contour
         //iterates through all contours and finds the biggest contour
+        isBall = false;
+        rect = null;
         for (int i = 0; i < contours.size(); i++) {
             double a = Imgproc.contourArea(contours.get(i));
-            if (a > maximumArea) {
+            curCont = Imgproc.boundingRect(contours.get(i));
+            if (a > maximumArea && a < 200 && curCont.height>1.2*curCont.width){
                 maximumArea = a;
                 bestContour = contours.get(i);
-                rect = Imgproc.boundingRect(bestContour); //rectangle around bestContour
+                rect = curCont; //rectangle around bestContour
             }
+            if(a>200)
+                isBall = true;
         }
-        if(rect.area() > 100) //checks if it's worth tracking this contour
+        if(rect != null && rect.area()>50) //checks if it's worth tracking this contour
             isBestContour = true;
         else
             isBestContour = false;
@@ -95,5 +103,4 @@ public class ColorBlobDetector {
         return isBestContour;
     }
 
-    public void setMinSize(int area){   minimumArea=area;  }
 }

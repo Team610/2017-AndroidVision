@@ -5,18 +5,24 @@
           android:versionName="3.01">
 
     <application
-        android:label="Maaran Sick Vision"
+        android:label="610 Vision Meme"
         android:icon="@drawable/icon"
         android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
 
         <activity android:name="maaran.ColorBlobDetectionActivity"
-                  android:label="Maaran Sick Vision"
+                  android:label="610 Vision Meme"
                   android:screenOrientation="landscape"
                   android:configChanges="keyboardHidden|orientation">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
+            </intent-filter>
+            <meta-data
+                android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
+                android:resource="@xml/device_filter" />
         </activity>
     </application>
 
@@ -26,12 +32,12 @@
                       android:largeScreens="true"
                       android:anyDensity="true" />
 
-    <uses-sdk android:minSdkVersion="8" android:targetSdkVersion="25" />
+    <uses-sdk android:minSdkVersion="19" android:targetSdkVersion="25" />
 
     <uses-permission android:name="android.permission.CAMERA"/>
 
-    <uses-feature android:name="android.hardware.camera" android:required="false"/>
-    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false"/>
+    <uses-feature android:name="android.hardware.camera" android:required="true"/>
+    <uses-feature android:name="android.hardware.camera.autofocus" android:required="true"/>
     <uses-feature android:name="android.hardware.camera.front" android:required="false"/>
     <uses-feature android:name="android.hardware.camera.front.autofocus" android:required="false"/>
 
