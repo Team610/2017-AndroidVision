@@ -35,6 +35,7 @@ import org.florescu.android.rangeseekbar.RangeSeekBar;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.Arrays;
 
 
 public class ColorBlobDetectionActivity extends Activity implements CvCameraViewListener2, RangeSeekBar.OnRangeSeekBarChangeListener, SensorEventListener{
@@ -50,6 +51,12 @@ public class ColorBlobDetectionActivity extends Activity implements CvCameraView
     private float[] acceleration;
 
     private float offset;
+
+    private double[] yMedian, xMedian;
+    private int medianCounter;
+
+    private double area;
+    private double oldArea;
 
     private boolean predictiveEnabled;
     private static final int port = 5800;
@@ -78,6 +85,7 @@ public class ColorBlobDetectionActivity extends Activity implements CvCameraView
     private  boolean cameraCreated;
 
     Rect rect;
+    Rect oldRect;
     Point topL;
     Point botR;
 
@@ -88,7 +96,7 @@ public class ColorBlobDetectionActivity extends Activity implements CvCameraView
     private View gameView;
     Client myClient;
 
-    private Rect roi = new Rect(0,0,500,480);
+    private Rect roi = new Rect(0,0,300,480);
 
     private boolean sliderShow = false;
     private boolean gameMode = false;
@@ -96,6 +104,7 @@ public class ColorBlobDetectionActivity extends Activity implements CvCameraView
     private CameraBridgeViewBase cvCameraView;
 
     private double xCentroid = 0;
+    private double yCentroid = 0;
 
     static boolean clientRun = true;
 
@@ -125,6 +134,9 @@ public class ColorBlobDetectionActivity extends Activity implements CvCameraView
         //Log.i(TAG, "called onCreate");
         super.onCreate(savedInstanceState);
         cameraCreated = false;
+        oldArea = 0;
+        area = 0;
+        medianCounter = 1;
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
@@ -135,6 +147,9 @@ public class ColorBlobDetectionActivity extends Activity implements CvCameraView
 
         senSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         senAccelerometer = senSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+
+        yMedian = new double[3];
+        xMedian = new double[3];
 
         hSlider = (RangeSeekBar) findViewById(R.id.hSlider);
         hSlider.setOnRangeSeekBarChangeListener(this);
@@ -155,6 +170,7 @@ public class ColorBlobDetectionActivity extends Activity implements CvCameraView
         gravity = new float[3];
         acceleration = new float[3];
         rect = new Rect();
+        oldRect = new Rect();
         topL = new Point();
         botR = new Point();
         socket = null;
@@ -202,7 +218,7 @@ public class ColorBlobDetectionActivity extends Activity implements CvCameraView
     }
 
     public void onCameraViewStopped() {
-        rgbaColors.release();
+        rgbaColors.release ();
     }
 
     public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
@@ -214,21 +230,73 @@ public class ColorBlobDetectionActivity extends Activity implements CvCameraView
         if(!sliderShow) {
             if (colorDetector.bestContour()) { //if there is a contour worth tracking
                 rect = colorDetector.getRect();
+                oldRect = colorDetector.oldRect;
+                if(rect.area() < oldRect.area() - 500 || rect.area() > oldRect.area() + 500)
+                    rect = oldRect;
                 topL = new Point(rect.x, rect.y);
                 botR = new Point(rect.x + rect.width, rect.y + rect.height);
                 xCentroid = rect.y + (rect.height/2);
+                yCentroid = rect.x + (rect.width/2);
+                xMedian[medianCounter%3] = xCentroid;
+                yMedian[medianCounter%3] = yCentroid;
+                medianCounter++;
+                Arrays.sort(yMedian);
+                Arrays.sort(xMedian);
+
+                if(colorDetector.trackingCounter == 0) {
+                    yCentroid = yMedian[1];
+                    xCentroid = xMedian[1];
+                }
+                else if(colorDetector.trackingCounter == 1) {
+                    yCentroid = (yMedian[1] + yMedian[2]) / 2;
+                    xCentroid = (xMedian[1] + xMedian[2]) / 2;
+                }
+                else {
+                    yCentroid = yMedian[2];
+                    xCentroid = xMedian[2];
+                }
+
                 xCentroid -= width/2;
-                if (predictiveEnabled)
-                    xCentroid += offset;
-                xCenter = xCentroid + "/n";
+                xCenter = xCentroid + "&"+ yCentroid + "/n";
                 Log.d("xCentroid", xCenter);
                 messageToSend.message = xCenter;
-                Imgproc.rectangle(rgbaColors, topL, botR, contourColor, 3); //draws rectangle over the current frame before returning it
+                Imgproc.rectangle(rgbaColors, topL, botR, contourColor, 4); //draws rectangle over the current frame before returning it
+                Imgproc.circle(rgbaColors,new Point(yCentroid,xCentroid += width/2),5,contourColor);
             }
-            else if(colorDetector.isBall)
-                messageToSend.message = "b/n";
+            else if(colorDetector.isBall) {
+                rect = colorDetector.oldRect;
+                topL = new Point(rect.x, rect.y);
+                botR = new Point(rect.x + rect.width, rect.y + rect.height);
+                xCentroid = rect.y + (rect.height/2);
+                yCentroid = rect.x + (rect.width/2);
+                xMedian[medianCounter%3] = xCentroid;
+                yMedian[medianCounter%3] = yCentroid;
+                medianCounter++;
+                Arrays.sort(yMedian);
+                Arrays.sort(xMedian);
+
+                if(colorDetector.trackingCounter == 0) {
+                    yCentroid = yMedian[1];
+                    xCentroid = xMedian[1];
+                }
+                else if(colorDetector.trackingCounter == 1) {
+                    yCentroid = (yMedian[1] + yMedian[2]) / 2;
+                    xCentroid = (xMedian[1] + xMedian[2]) / 2;
+                }
+                else {
+                    yCentroid = yMedian[2];
+                    xCentroid = xMedian[2];
+                }
+
+                xCentroid -= width/2;
+                xCenter = xCentroid + "&"+ yCentroid + "/n";
+                Log.d("xCentroid", xCenter);
+                messageToSend.message = xCenter;
+                Imgproc.rectangle(rgbaColors, topL, botR, contourColor, 4); //draws rectangle over the current frame before returning it
+                Imgproc.circle(rgbaColors,new Point(yCentroid,xCentroid += width/2),5,contourColor);
+            }
             else
-                messageToSend.message = "No target/n";
+                messageToSend.message = "No target&No target/n";
         }
         else{
             rgbaColors = colorDetector.maskedFrame(rgbaColors);
@@ -313,8 +381,8 @@ public class ColorBlobDetectionActivity extends Activity implements CvCameraView
 
     public void retroPreset(View view){
         lowerLimit.val[0] = 22;
-        lowerLimit.val[1] = 203;
-        lowerLimit.val[2] = 162;
+        lowerLimit.val[1] = 151;
+        lowerLimit.val[2] = 149;
         upperLimit.val[0] = 96;
         upperLimit.val[1] = 255;
         upperLimit.val[2] = 255;
@@ -418,6 +486,9 @@ public class ColorBlobDetectionActivity extends Activity implements CvCameraView
         if(clientRun){
             Client myClient = new Client();
             myClient.execute(clientSocket);
+        }
+        else{
+            clientRun = true;
         }
     }
 

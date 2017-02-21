@@ -34,6 +34,7 @@ public class Client extends AsyncTask<Socket, Void, Socket>{
                 oldMessage = messageToSend.message;
             }
         } catch (IOException e) {
+            ColorBlobDetectionActivity.clientRun = false;
         }
         return socket;
     }

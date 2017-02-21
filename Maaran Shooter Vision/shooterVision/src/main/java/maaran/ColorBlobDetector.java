@@ -19,6 +19,8 @@ public class ColorBlobDetector {
     private Scalar upperLimit = new Scalar(0);
     private Scalar lowerLimit = new Scalar(0);
     public static boolean isBall = false;
+    public static Rect oldRect;
+    public static int trackingCounter = 0;
 
     private MatOfPoint bestContour = new MatOfPoint(); //stores best contour
 
@@ -53,25 +55,35 @@ public class ColorBlobDetector {
         contours.clear(); //clears list
 
         Imgproc.findContours(mMask, contours, mHierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE); //finds all contours
-        maximumArea = 0; //used to track biggest contour
+        maximumArea = 1000; //used to track biggest contour
         //iterates through all contours and finds the biggest contour
         isBall = false;
+        if(rect != null)
+            oldRect = rect;
         rect = null;
         for (int i = 0; i < contours.size(); i++) {
             double a = Imgproc.contourArea(contours.get(i));
             curCont = Imgproc.boundingRect(contours.get(i));
-            if (a > maximumArea && a < 200 && curCont.height>1.2*curCont.width){
+            if (a > maximumArea && a < 15000 && curCont.height>1.2*curCont.width){
                 maximumArea = a;
                 bestContour = contours.get(i);
                 rect = curCont; //rectangle around bestContour
             }
-            if(a>200)
+            if(a>15000)
                 isBall = true;
         }
-        if(rect != null && rect.area()>50) //checks if it's worth tracking this contour
+        if(rect != null && rect.area()>1000 && rect.area() <15000) { //checks if it's worth tracking this contour
             isBestContour = true;
-        else
+            trackingCounter++;
+        }
+        else {
             isBestContour = false;
+            if(!isBall)
+                trackingCounter = 0;
+            else
+                trackingCounter++;
+        }
+        Log.d("trackingCounter", " " + trackingCounter);
     }
 
     public Mat maskedFrame(Mat rgbaImage){
